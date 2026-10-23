@@ -16,6 +16,7 @@
 
 #include "host/boundary.h"
 #include "libNativeExtensions/jsc/jsc_common.h"
+#include "libNativeExtensions/jsc/settings_categories.h"
 
 namespace ssn::native_ext::jsc {
 namespace {
@@ -323,6 +324,9 @@ SSN_PINVOKE(kLib, "JSCExecutorSetContextName", void, ssn_NativeExtensions_JSCExe
 // JSCExecutorEvaluateScript(executor, script, sourceURL, exception) — 0x10ab0 -> 0xe060.
 SSN_PINVOKE(kLib, "JSCExecutorEvaluateScript", void, ssn_NativeExtensions_JSCExecutorEvaluateScript,
             (JSCExecutor * ex, const char* script, const char* source_url, JSCExecutorExceptionWrapper* error)) {
+  // HOST POLICY: the Settings root categories a host keeps (settings_categories.h).
+  const std::string patched = settings_categories_patch(script);
+  if (!patched.empty()) script = patched.c_str();
   JSStringRef script_str = JSStringCreateWithUTF8CString(script);
   if (!script_str) {
     std::fprintf(stderr, "[RNPS] %s() %s\n", "EvaluateScript", "Failed to create script JSString");

@@ -354,6 +354,13 @@ or policy. Each one is marked `HOST VALUE` / `HOST POLICY` in the code and logge
   window of its own. The host window minimizes when the program starts and is restored and
   brought to the front when the application ends; meanwhile the XInput pad drives the shell only
   while the host window is in front.
+* **Settings root categories** (`psmhost/libNativeExtensions/jsc/settings_categories.cpp`) — the
+  Settings root (NPXS40008) is a fixed list of 13 categories (module 932 of the 4.03 bundle,
+  stored unfiltered by `categoriesList`, module 865); the firmware hides none. With
+  `<cache>/host/settings.json` (`{"categories": ["<itemId>", ...]}`), the module that exports the
+  list is evaluated with it filtered to those itemIds, in the firmware's order. Debug Settings and
+  Voice Command, which the firmware adds after the list, are not affected. Without the file
+  nothing changes.
 * **Application ids** (`psmhost/shellcore/lnc_service.cpp`) — the kernel's numbering
   (`sceKernelBeginAppMount2`) is not traced; the host numbers applications 1, 2, ..., ShellUI
   first. ShellUI treats appIds as opaque.
