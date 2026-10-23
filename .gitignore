@@ -1,0 +1,14 @@
+# fetched third-party runtime (tools/fetch_deps.ps1)
+deps/
+# build output, prepared-assembly cache, logs
+build/
+# local RE workspace: extracted firmware IL, IDA databases, decompiled sources.
+# Nothing derived from the firmware is committed.
+work/
+__pycache__/
+*.i64
+*.id0
+*.id1
+*.id2
+*.nam
+*.til

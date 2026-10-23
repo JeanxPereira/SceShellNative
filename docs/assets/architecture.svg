@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 432" width="1080" height="432" role="img" aria-labelledby="architecture-title architecture-desc">
+<title id="architecture-title">How SceShellNative fits together</title>
+<desc id="architecture-desc">The PS5 shell and its React Native apps come unmodified from a firmware dump and run on Mono and JavaScriptCore; SceShellNative is the host boundary underneath them, the PS5 platform reimplemented on Windows over Vulkan.</desc>
+<defs><linearGradient id="architecture-bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d1e27"/><stop offset="1" stop-color="#22232c"/></linearGradient><pattern id="architecture-g" width="16" height="16" patternUnits="userSpaceOnUse"><path d="M16 0H0V16" fill="none" stroke="#cba56e" stroke-opacity=".05" stroke-width="1"/></pattern><pattern id="architecture-G" width="80" height="80" patternUnits="userSpaceOnUse"><path d="M80 0H0V80" fill="none" stroke="#cba56e" stroke-opacity=".10" stroke-width="1"/></pattern></defs>
+<style>.name{font:600 15px -apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif;fill:#e4e0d6} .sub{font:500 10px ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,monospace;fill:#9d988d;letter-spacing:.08em} .eyebrow{font:500 10px ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,monospace;fill:#9d988d;letter-spacing:.14em} .chip{font:500 10px ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,monospace;fill:#cba56e} .gold{fill:#cba56e}</style>
+<rect width="1080" height="432" rx="10" fill="url(#architecture-bg)"/>
+<rect width="1080" height="432" rx="10" fill="url(#architecture-g)"/>
+<rect width="1080" height="432" rx="10" fill="url(#architecture-G)"/>
+<rect x=".5" y=".5" width="1079" height="431" rx="10" fill="none" stroke="#cba56e" stroke-opacity=".30"/>
+<text class="eyebrow" x="24" y="30">HOW IT FITS TOGETHER</text>
+<rect x="24" y="52" width="272" height="228" rx="8" fill="none" stroke="#9d988d" stroke-opacity=".55" stroke-dasharray="5 4"/>
+<text class="eyebrow" x="40" y="76">FIRMWARE DUMP · READ ONLY</text>
+<rect x="40" y="92" width="240" height="48" rx="6" fill="#24252f"/>
+<rect x="40" y="92" width="240" height="48" rx="6" fill="none" stroke="#9d988d" stroke-opacity=".8" stroke-width="1.2" stroke-dasharray="5 4"/>
+<text class="name" x="54" y="114">Managed assemblies</text>
+<text class="sub" x="54" y="130">*.DLL.SPRX · FW 4.03 IL</text>
+<rect x="40" y="152" width="240" height="48" rx="6" fill="#24252f"/>
+<rect x="40" y="152" width="240" height="48" rx="6" fill="none" stroke="#9d988d" stroke-opacity=".8" stroke-width="1.2" stroke-dasharray="5 4"/>
+<text class="name" x="54" y="174">Assets and app bundles</text>
+<text class="sub" x="54" y="190">VSH_ASSET · RNPS</text>
+<rect x="40" y="212" width="240" height="48" rx="6" fill="#24252f"/>
+<rect x="40" y="212" width="240" height="48" rx="6" fill="none" stroke="#9d988d" stroke-opacity=".8" stroke-width="1.2" stroke-dasharray="5 4"/>
+<text class="name" x="54" y="234">Native modules</text>
+<text class="sub" x="54" y="250">EBOOT.BIN · LIBSCEPSM.SPRX</text>
+<rect x="312" y="92" width="204" height="48" rx="6" fill="#24252f"/>
+<rect x="312" y="92" width="204" height="48" rx="6" fill="#cba56e" fill-opacity=".10"/>
+<rect x="312" y="92" width="204" height="48" rx="6" fill="none" stroke="#cba56e" stroke-width="1.4"/>
+<text class="name" x="326" y="114">Prep</text>
+<text class="sub gold" x="326" y="130">CARVE · RETARGET · SORT</text>
+<line x1="280" y1="116" x2="305" y2="116" stroke="#9d988d" stroke-width="1.2"/>
+<path d="M312 116 L304 112 L304 120 Z" fill="#9d988d"/>
+<rect x="600" y="52" width="456" height="312" rx="8" fill="none" stroke="#e4e0d6" stroke-opacity=".35"/>
+<text class="eyebrow" x="616" y="76">SCESHELLNATIVE.EXE · ONE PROCESS</text>
+<rect x="616" y="92" width="206" height="48" rx="6" fill="#24252f"/>
+<rect x="616" y="92" width="206" height="48" rx="6" fill="none" stroke="#9d988d" stroke-opacity=".8" stroke-width="1.2" stroke-dasharray="5 4"/>
+<text class="name" x="630" y="114">ShellUI</text>
+<text class="sub" x="630" y="130">NPXS40087 · C#</text>
+<rect x="834" y="92" width="206" height="48" rx="6" fill="#24252f"/>
+<rect x="834" y="92" width="206" height="48" rx="6" fill="none" stroke="#9d988d" stroke-opacity=".8" stroke-width="1.2" stroke-dasharray="5 4"/>
+<text class="name" x="848" y="114">React Native apps</text>
+<text class="sub" x="848" y="130">SETTINGS · HOME · JS</text>
+<rect x="616" y="152" width="206" height="48" rx="6" fill="#24252f"/>
+<rect x="616" y="152" width="206" height="48" rx="6" fill="#e4e0d6" fill-opacity=".04"/>
+<rect x="616" y="152" width="206" height="48" rx="6" fill="none" stroke="#e4e0d6" stroke-opacity=".45" stroke-width="1.2"/>
+<text class="name" x="630" y="174">Mono 6.8</text>
+<text class="sub" x="630" y="190">DESKTOP · BRANCH 2019-10</text>
+<rect x="834" y="152" width="206" height="48" rx="6" fill="#24252f"/>
+<rect x="834" y="152" width="206" height="48" rx="6" fill="#e4e0d6" fill-opacity=".04"/>
+<rect x="834" y="152" width="206" height="48" rx="6" fill="none" stroke="#e4e0d6" stroke-opacity=".45" stroke-width="1.2"/>
+<text class="name" x="848" y="174">JavaScriptCore</text>
+<text class="sub" x="848" y="190">SONY JSC-400 SOURCE</text>
+<rect x="616" y="212" width="424" height="88" rx="6" fill="#24252f"/>
+<rect x="616" y="212" width="424" height="88" rx="6" fill="#cba56e" fill-opacity=".10"/>
+<rect x="616" y="212" width="424" height="88" rx="6" fill="none" stroke="#cba56e" stroke-width="1.4"/>
+<text class="name" x="630" y="234">Host boundary</text>
+<text class="sub gold" x="630" y="250">THE PS5 PLATFORM, REIMPLEMENTED FROM THE BINARIES</text>
+<rect x="630" y="262" width="73" height="24" rx="3" fill="none" stroke="#cba56e" stroke-opacity=".55"/>
+<text class="chip" x="666.5" y="278" text-anchor="middle">libScePsm</text>
+<rect x="711" y="262" width="47" height="24" rx="3" fill="none" stroke="#cba56e" stroke-opacity=".55"/>
+<text class="chip" x="734.5" y="278" text-anchor="middle">eboot</text>
+<rect x="766" y="262" width="73" height="24" rx="3" fill="none" stroke="#cba56e" stroke-opacity=".55"/>
+<text class="chip" x="802.5" y="278" text-anchor="middle">ShellCore</text>
+<rect x="847" y="262" width="73" height="24" rx="3" fill="none" stroke="#cba56e" stroke-opacity=".55"/>
+<text class="chip" x="883.5" y="278" text-anchor="middle">libkernel</text>
+<rect x="928" y="262" width="40" height="24" rx="3" fill="none" stroke="#cba56e" stroke-opacity=".55"/>
+<text class="chip" x="948.0" y="278" text-anchor="middle">NGS2</text>
+<rect x="976" y="262" width="34" height="24" rx="3" fill="none" stroke="#cba56e" stroke-opacity=".55"/>
+<text class="chip" x="993.0" y="278" text-anchor="middle">IME</text>
+<rect x="616" y="312" width="424" height="40" rx="6" fill="#24252f"/>
+<rect x="616" y="312" width="424" height="40" rx="6" fill="#e4e0d6" fill-opacity=".04"/>
+<rect x="616" y="312" width="424" height="40" rx="6" fill="none" stroke="#e4e0d6" stroke-opacity=".45" stroke-width="1.2"/>
+<text class="name" x="630" y="337">Windows</text>
+<text class="sub" x="1026" y="336" text-anchor="end">VULKAN · WIN32 · AUDIO · XINPUT</text>
+<line x1="516" y1="116" x2="609" y2="116" stroke="#9d988d" stroke-width="1.2"/>
+<path d="M616 116 L608 112 L608 120 Z" fill="#9d988d"/>
+<rect x="526.0" y="92" width="80.0" height="14" fill="#1d1e27"/>
+<text class="sub" x="566.0" y="103" text-anchor="middle">PATCHED IL</text>
+<line x1="280" y1="248" x2="609" y2="248" stroke="#9d988d" stroke-width="1.2"/>
+<path d="M616 248 L608 244 L608 252 Z" fill="#9d988d"/>
+<rect x="385.6" y="224" width="108.8" height="14" fill="#1d1e27"/>
+<text class="sub" x="440" y="235" text-anchor="middle">RUN-TIME READS</text>
+<line x1="24" y1="380" x2="1056" y2="380" stroke="#e4e0d6" stroke-opacity=".12"/>
+<rect x="24" y="396" width="22" height="12" rx="3" fill="none" stroke="#9d988d" stroke-dasharray="4 3"/>
+<text class="eyebrow" x="56" y="406">FROM THE FIRMWARE · NEVER IN THIS REPOSITORY</text>
+<rect x="440" y="396" width="22" height="12" rx="3" fill="#e4e0d6" fill-opacity=".04" stroke="#e4e0d6" stroke-opacity=".45"/>
+<text class="eyebrow" x="472" y="406">OPEN SOURCE · OPERATING SYSTEM</text>
+<rect x="770" y="396" width="22" height="12" rx="3" fill="#cba56e" fill-opacity=".10" stroke="#cba56e"/>
+<text class="eyebrow gold" x="802" y="406">THIS REPOSITORY</text>
+</svg>
