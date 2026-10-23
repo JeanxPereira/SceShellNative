@@ -1,0 +1,43 @@
+'vswhere.exe' não é reconhecido como um comando interno
+ou externo, um programa operável ou um arquivo em lotes.
+[0/2] Re-checking globbed directories...
+[1/34] Building CXX object launcher\CMakeFiles\SceShellNative.dir\__\psmhost\eboot\boot_args.cpp.obj
+[2/34] Building CXX object launcher\CMakeFiles\SceShellNative.dir\__\psmhost\libScePsm\resources\cxml_icalls.cpp.obj
+[3/34] Building CXX object launcher\CMakeFiles\SceShellNative.dir\src\host\context.cpp.obj
+[4/34] Building CXX object launcher\CMakeFiles\SceShellNative.dir\__\psmhost\libNativeExtensions\rnps_app_mgr.cpp.obj
+[5/34] Building CXX object launcher\CMakeFiles\SceShellNative.dir\__\psmhost\libScePsm\audio\sound_icalls.cpp.obj
+[6/34] Building CXX object launcher\CMakeFiles\SceShellNative.dir\__\psmhost\libScePsm\environment\system_parameters.cpp.obj
+[7/34] Building CXX object launcher\CMakeFiles\SceShellNative.dir\__\psmhost\libScePsm\audio\psm_module_image.cpp.obj
+[8/34] Building CXX object launcher\CMakeFiles\SceShellNative.dir\__\psmhost\libSceNgs2\ngs2_image.cpp.obj
+[9/34] Building CXX object launcher\CMakeFiles\SceShellNative.dir\__\psmhost\libScePsm\imaging\image_icalls.cpp.obj
+[10/34] Building CXX object launcher\CMakeFiles\SceShellNative.dir\__\psmhost\eboot\db_preparation_async_storage.cpp.obj
+[11/34] Building CXX object launcher\CMakeFiles\SceShellNative.dir\__\psmhost\eboot\app_browse_db.cpp.obj
+[12/34] Building CXX object launcher\CMakeFiles\SceShellNative.dir\__\psmhost\eboot\db_preparation.cpp.obj
+[13/34] Building CXX object launcher\CMakeFiles\SceShellNative.dir\__\psmhost\libScePsm\audio\bgm_icalls.cpp.obj
+[14/34] Building CXX object launcher\CMakeFiles\SceShellNative.dir\__\psmhost\eboot\app_browse_content.cpp.obj
+[15/34] Building CXX object launcher\CMakeFiles\SceShellNative.dir\__\psmhost\libNativeExtensions\jsc\decrypt_rnps_bundle.cpp.obj
+[16/34] Building CXX object launcher\CMakeFiles\SceShellNative.dir\__\psmhost\eboot\bglayer_bgm.cpp.obj
+[17/34] Building CXX object launcher\CMakeFiles\SceShellNative.dir\__\psmhost\eboot\bglayer_gpu.cpp.obj
+[18/34] Building CXX object launcher\CMakeFiles\SceShellNative.dir\__\psmhost\libScePsm\runtime\diagnostics.cpp.obj
+[19/34] Building CXX object launcher\CMakeFiles\SceShellNative.dir\__\psmhost\libSysBridge\kernel_version.cpp.obj
+[20/34] Building CXX object launcher\CMakeFiles\SceShellNative.dir\__\psmhost\eboot\bglayer_particle.cpp.obj
+[21/34] Building CXX object launcher\CMakeFiles\SceShellNative.dir\src\main.cpp.obj
+[22/34] Building CXX object launcher\CMakeFiles\SceShellNative.dir\__\psmhost\libkernel\process_param.cpp.obj
+[23/34] Building CXX object launcher\CMakeFiles\SceShellNative.dir\__\psmhost\libSceUrlConfigResolver\url_config_resolver.cpp.obj
+[24/34] Building CXX object launcher\CMakeFiles\SceShellNative.dir\__\psmhost\libSysBridge\error_table.cpp.obj
+[25/34] Building CXX object launcher\CMakeFiles\SceShellNative.dir\__\psmhost\shellcore\rnps_app_mgr.cpp.obj
+[26/34] Building CXX object launcher\CMakeFiles\SceShellNative.dir\__\psmhost\libScePsm\text\font_engine.cpp.obj
+[27/34] Building CXX object launcher\CMakeFiles\SceShellNative.dir\__\psmhost\shellcore\app_db.cpp.obj
+[28/34] Building CXX object launcher\CMakeFiles\SceShellNative.dir\__\psmhost\shellcore\db_preparation_server.cpp.obj
+[29/34] Building CXX object launcher\CMakeFiles\SceShellNative.dir\__\psmhost\shellcore\shellcore_build.cpp.obj
+[30/34] Building CXX object launcher\CMakeFiles\SceShellNative.dir\__\psmhost\libScePsmUtil\media_fw.cpp.obj
+D:\CodingProjects\SceShellNative\psmhost\libScePsmUtil\media_fw.cpp(13,9): warning: 'WIN32_LEAN_AND_MEAN' macro redefined [-Wmacro-redefined]
+   13 | #define WIN32_LEAN_AND_MEAN
+      |         ^
+<command line>(9,9): note: previous definition is here
+    9 | #define WIN32_LEAN_AND_MEAN 1
+      |         ^
+1 warning generated.
+[31/34] Building CXX object launcher\CMakeFiles\SceShellNative.dir\__\psmhost\shellcore\user_service.cpp.obj
+[32/34] Building CXX object launcher\CMakeFiles\SceShellNative.dir\__\psmhost\shellcore\app_db_promote.cpp.obj
+[33/34] Linking CXX executable bin\SceShellNative.exe

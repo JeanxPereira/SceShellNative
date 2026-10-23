@@ -24,17 +24,14 @@ struct Daemon {
 };
 Daemon& daemon();
 
-// Console path -> host path for the trees the daemon reads and writes:
-//   /system_data/...        -> <cache>/system_data/...   (the sandbox word's tree)
-//   /system_ex/rnps/...     -> the RNPS root (--rnps, or the dump's /system_ex/rnps)
-//   /user/...               -> <cache>/user/...
-//   anything else           -> the firmware dump.
+// Console path -> host path for the trees the daemon reads and writes (host::console_host_path).
 std::string host_path(const std::string& console_path);
 
 // 0x225E40 AppInstallAll (promote event 1).
 int32_t app_install_all();
 
-// 0xB6C700 InsertAppInfo and the 0x243DD0 AppPromote it ends, for one appdb directory.
-int32_t app_promote_rnps(const std::string& param_path, const std::string& metadata_dir, const std::string& app_path);
+// 0x232950 with a param.json (parsed by 0x10675E0), then the 0x243DD0 AppPromote and the
+// 0xB6C700 InsertAppInfo it ends: one RNPS appdb directory or one /user/app directory title.
+int32_t app_promote_json(const std::string& param_path, const std::string& metadata_dir, const std::string& app_path);
 
 }  // namespace ssn::shellcore::appdb

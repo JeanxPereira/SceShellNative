@@ -45,10 +45,16 @@ int32_t NewFromFileImage(MonoArray* file_image, uint32_t* handle) {
 }
 SSN_ICALL("Sce.PlayStation.Core.Imaging.Image::NewFromFileImage", NewFromFileImage);
 
-// A path the PSM file layer (0x201210) opens: console paths resolve against the firmware
-// dump; anything not found there is taken as a host path (the drive-less form of
+// A path the PSM file layer (0x201210) opens: the writable console trees (/user,
+// /system_data) resolve into the cache, other console paths against the firmware dump;
+// anything not found there is taken as a host path (the drive-less form of
 // host::managed_path that RN app assets arrive in).
 std::string resolve_file(const std::string& path) {
+  if (path.rfind("/user/", 0) == 0 || path.rfind("/system_data/", 0) == 0) {
+    const std::string mapped = host::console_host_path(path);
+    std::error_code ec;
+    if (std::filesystem::is_regular_file(mapped, ec)) return mapped;
+  }
   if (Firmware* fw = host::ctx().firmware) {
     const std::string mapped = fw->host_path(path);
     std::error_code ec;

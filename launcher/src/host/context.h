@@ -18,4 +18,11 @@ struct Context {
 
 Context& ctx();
 
+// Console path -> host path:
+//   /system_data/...        -> <cache>/system_data/...   (the sandbox word's tree)
+//   /system_ex/rnps/...     -> the RNPS root (--rnps, or the dump's /system_ex/rnps)
+//   /user/...               -> <cache>/user/...
+//   anything else           -> the firmware dump.
+std::string console_host_path(const std::string& console_path);
+
 }  // namespace ssn::host

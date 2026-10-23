@@ -1,9 +1,10 @@
 // SceShellCore AppDb population from installed apps (FW 4.03, app_promoter.cpp and the
 // AppDb daemon's InsertAppInfo/UpdateAppInfo), reproduced for the preinstalled React Native
-// apps (/system_ex/rnps/apps/<titleId>/appdb/<dir>). Addresses are SceShellCore.elf offsets.
+// apps (/system_ex/rnps/apps/<titleId>/appdb/<dir>) and for the directory titles of /user/app/
+// (<titleId>/sce_sys with no app.pkg). Addresses are SceShellCore.elf offsets.
 //
-// Not reproduced (each logged once): /system_ex/app/ and /user/app/ titles, appmeta-based
-// titles, download data (0x2547B0), the post-promote hook 0x222DC0, the existing-title merge
+// Not reproduced (each logged once): /system_ex/app/ titles, /user/app/ package titles (app.pkg,
+// 0x220D10), appmeta-based titles, download data (0x2547B0), the post-promote hook 0x222DC0, the existing-title merge
 // path of AppPromote, delete-mark purging (0xB713C0), content path checks (0xB71B60), the
 // concept_title.db lookup (0xB82160/0xB9B260), notifications to AppDb clients (0xBA49E0).
 #include <algorithm>
@@ -840,10 +841,10 @@ int64_t view_category(const AppInfo& a, const std::string& tid) {
 
 }  // namespace
 
-// 0x243DD0 AppPromote (main) + 0x232950, for an RNPS appdb directory.
-int32_t app_promote_rnps(const std::string& param_path, const std::string& metadata_dir, const std::string& app_path) {
-  // 0x232950: a param.json under /system_ex/rnps/apps/ is read by 0x10675E0 -> 0x1067790
-  // (file size 1..0x20000).
+// 0x243DD0 AppPromote (main) + 0x232950, for a param.json.
+int32_t app_promote_json(const std::string& param_path, const std::string& metadata_dir, const std::string& app_path) {
+  // 0x232950: a param.json under /system_ex/rnps/apps/, and any param path without ".sfo"
+  // elsewhere, is read by 0x10675E0 -> 0x1067790 (file size 1..0x20000).
   std::ifstream f(host_path(param_path), std::ios::binary);
   if (!f) return static_cast<int32_t>(0x80BD0009u);
   const std::string text((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
@@ -993,7 +994,7 @@ int32_t install_rnps_title_dir(const std::string& tid, const std::string& root) 
       continue;
     }
     host::note_unimplemented("SceShellCore appInstallRNPSTitleDirMain download data (0x2547B0) and post hook (0x222DC0) not reproduced");
-    const int32_t r = app_promote_rnps(param, dir, root + tid);
+    const int32_t r = app_promote_json(param, dir, root + tid);
     if (r < 0) {
       log::warn("appdb", "appInstallRNPSTitleDirMain AppPromote Error [{}] 0x{:08x}", tid, static_cast<uint32_t>(r));
       result = r;
@@ -1003,20 +1004,94 @@ int32_t install_rnps_title_dir(const std::string& tid, const std::string& root) 
   return result;
 }
 
+constexpr int32_t kErrInvalidArg = static_cast<int32_t>(0x80A30003u);
+constexpr int32_t kErrNoEntry = static_cast<int32_t>(0x80A30008u);
+
+bool is_directory(const std::string& console) {
+  std::error_code ec;
+  return fs::is_directory(host_path(console), ec);
+}
+
+// 0x254430 appInstallCheckDir(root, titleId): the title directory and its sce_sys exist, with a
+// param.sfo or a param.json and an icon0.png.
+int32_t install_check_dir(const std::string& root, const std::string& tid) {
+  if (root.size() + tid.size() + 8 + 11 > 1023) return kErrInvalidArg;
+  if (!is_directory(root) || !is_directory(root + tid)) return kErrNoEntry;
+  const std::string sce_sys = root + tid + "/sce_sys";
+  if (!is_directory(sce_sys)) return kErrNoEntry;
+  if (!is_regular_file(sce_sys + "/param.sfo") && !is_regular_file(sce_sys + "/param.json")) return kErrNoEntry;
+  return is_regular_file(sce_sys + "/icon0.png") ? 0 : kErrNoEntry;
+}
+
+// 0x260CF0 for a directory outside /system_ex: param.sfo when it exists, else param.json.
+std::string param_file(const std::string& sce_sys) {
+  const std::string sfo = sce_sys + "/param.sfo";
+  return is_regular_file(sfo) ? sfo : sce_sys + "/param.json";
+}
+
+// 0x21E940 AppInstallTitleDirMain(titleId, "/user/app/", 1, 0), storage 0 (0x260040).
+int32_t install_user_title_dir(const std::string& tid, const std::string& root) {
+  // sywg_RnhZMA() == 13 also skips NPXS20105; the query is not traced (HOST VALUE: not 13).
+  if (tid == "NPXS29998") return 0;
+  // A package title: <tid>/app.pkg, or the first slot 01..15 with <tid>/NN/app.pkg (0x261D00,
+  // slot 0 is the unslotted path), goes to 0x220D10, which mounts the package.
+  for (int slot = 0; slot < 16; ++slot) {
+    char rel[32];
+    if (slot == 0) std::snprintf(rel, sizeof rel, "/app.pkg");
+    else std::snprintf(rel, sizeof rel, "/%02d/app.pkg", slot);
+    if (is_regular_file(root + tid + rel)) {
+      host::note_unimplemented("SceShellCore AppInstallTitleDirMain package title (app.pkg, 0x220D10) not reproduced");
+      return 0;
+    }
+  }
+  if (const int32_t r = install_check_dir(root, tid); r < 0) {
+    log::warn("appdb", "appInstallCheckDir Error [{}] ret = [0x{:08x}]", tid, static_cast<uint32_t>(r));
+    return r;
+  }
+  const std::string sce_sys = root + tid + "/sce_sys";
+  const std::string param = param_file(sce_sys);
+  if (is_regular_file(sce_sys + "/nptitle.dat"))
+    host::note_unimplemented("SceShellCore AppInstallTitleDirMain nptitle.dat copy (0x2606E0, 0x265790) not reproduced");
+  host::note_unimplemented("SceShellCore AppInstallTitleDirMain download data (0x2547B0) and post hook (0x222DC0) not reproduced");
+  // 0x232950(param, sce_sys, sce_sys, root + tid, 2, 0, 1, 1, -1): a path with ".sfo" goes to the
+  // SFO parser (0x106B9F0).
+  if (param.find(".sfo") != std::string::npos) {
+    host::note_unimplemented("SceShellCore AppPromote of a param.sfo (0x106B9F0) not reproduced");
+    return 0;
+  }
+  const int32_t r = app_promote_json(param, sce_sys, root + tid);
+  if (r < 0) log::warn("appdb", "AppPromote Error [{}] ret = [0x{:08x}]", tid, static_cast<uint32_t>(r));
+  return r;
+}
+
 }  // namespace
 
 // 0x225E40 AppInstallAll.
 int32_t app_install_all() {
-  host::note_unimplemented("SceShellCore AppInstallAll for /system_ex/app/, /user/app/ and appmeta titles not reproduced (RNPS apps only)");
-  const std::string root = "/system_ex/rnps/apps/";
-  std::vector<std::string> titles;  // 0x228BA0: the app directories of the root
+  host::note_unimplemented("SceShellCore AppInstallAll for /system_ex/app/ and appmeta titles, and its progress counters (0x234D00), not reproduced");
   std::error_code ec;
-  for (const auto& e : fs::directory_iterator(host_path(root), ec))
-    if (e.is_directory(ec)) titles.push_back(e.path().filename().string());
-  std::sort(titles.begin(), titles.end());
-  for (const auto& t : titles) {
-    const int32_t r = install_rnps_title_dir(t, root);
-    if (r < 0) log::warn("appdb", "appInstallRNPSTitleDirMain {} 0x{:08x}", t, static_cast<uint32_t>(r));
+  {
+    const std::string root = "/system_ex/rnps/apps/";
+    std::vector<std::string> titles;  // 0x228BA0: the app directories of the root
+    for (const auto& e : fs::directory_iterator(host_path(root), ec))
+      if (e.is_directory(ec)) titles.push_back(e.path().filename().string());
+    std::sort(titles.begin(), titles.end());
+    for (const auto& t : titles) {
+      const int32_t r = install_rnps_title_dir(t, root);
+      if (r < 0) log::warn("appdb", "appInstallRNPSTitleDirMain {} 0x{:08x}", t, static_cast<uint32_t>(r));
+    }
+  }
+  {
+    // 0x226C20("/user/app/"): the subdirectories of the root (0x260B80), each through 0x21E940.
+    const std::string root = "/user/app/";
+    std::vector<std::string> titles;
+    for (const auto& e : fs::directory_iterator(host_path(root), ec))
+      if (e.is_directory(ec)) titles.push_back(e.path().filename().string());
+    std::sort(titles.begin(), titles.end());  // HOST POLICY: directory order (getdents) not reproduced; sorted by name
+    for (const auto& t : titles) {
+      const int32_t r = install_user_title_dir(t, root);
+      if (r < 0) log::warn("appdb", "AppInstallTitleDirMain {} 0x{:08x}", t, static_cast<uint32_t>(r));
+    }
   }
   return 0;
 }
