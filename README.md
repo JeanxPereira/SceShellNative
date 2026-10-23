@@ -128,8 +128,12 @@ Headless runs, frame captures, scripted input and the diagnostics variables are 
 | `tools/jsc/` | Reproducible build of Sony's JavaScriptCore for Win64 |
 | `managed/Tests/` | Renderer and text smoke tests that drive the firmware's own `Sce.PlayStation.Core` |
 
+## Acknowledgments
+
+Thanks to **basedempth** ([@exhaustiblewizard](https://github.com/exhaustiblewizard)) for all the help along the way. Much of what runs here was reached because of it.
+
 ---
 
 <p align="center">
-  Made by <a href="https://github.com/JeanxPereira">JeanxPereira</a>
+  Made by <a href="https://github.com/JeanxPereira">JeanxPereira</a>, with thanks to <a href="https://github.com/exhaustiblewizard">basedempth</a>
 </p>

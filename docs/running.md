@@ -42,7 +42,7 @@ Unattended runs (no window, nothing takes the focus):
   `:<frames>` sets it). Events go through the keyboard's key table (`docs/input.md`), so
   `ps` is exactly what Home does. Names: `cross circle square triangle up down left right
   l1 r1 l2 r2 l3 r3 options create`(=`share`)` ps touchpad mute`, and the stick directions
-  `lup ldown lleft lright rup rdown rleft rright`. `f700:text:Jean` types printable ASCII on the
+  `lup ldown lleft lright rup rdown rleft rright`. `f700:text:User` types printable ASCII on the
   USB keyboard (one character every 10 frames, through the firmware's default layout) and
   `f900:key:enter` presses one keyboard key (`enter escape backspace tab space delete home end
   pageup pagedown left right up down shift ctrl alt`, optional `:<hold>`); both reach the

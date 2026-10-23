@@ -7,7 +7,7 @@
 // Each event presses at the end of frame N and releases at the end of frame N + hold
 // (default 42 frames, ~700 ms at 60 Hz). Button names are listed in docs/input.md.
 //
-//   "f700:text:Jean"      types on the declared USB keyboard (input::inject_usb_key), one
+//   "f700:text:User"      types on the declared USB keyboard (input::inject_usb_key), one
 //                         character every 10 frames, through the firmware's default layout
 //   "f900:key:enter[:4]"  one USB keyboard key (names in docs/ime.md)
 #pragma once
