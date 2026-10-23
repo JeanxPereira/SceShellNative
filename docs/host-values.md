@@ -343,6 +343,15 @@ or policy. Each one is marked `HOST VALUE` / `HOST POLICY` in the code and logge
   entries to that table from `<cache>/host/ps_platform.json` (`{"<titleId>": <platform>}`), for
   titles a host tool installs into `/user/app` that are not console games. With -1 the home draws
   no PS5/PS4/PS3 mark on the tile, as for those system titles. Without the file nothing changes.
+* **Application processes** (`psmhost/shellcore/lnc_host_app.cpp`, docs/app-launch.md) — the
+  PC cannot run a PS5 executable, so SceShellCore's `spawnApp` starts the program a title names
+  in `<cache>/host/apps.json` (`"exe"` with `"args"` and `"cwd"`, or a `"uri"` for the PC's
+  shell). The application runs while that process runs and, with `"watch"`, while a process
+  from that directory runs (the host waits up to 120 s for one to appear); then the launcher's
+  `onAppExit` follows. A title without an entry fails to spawn with 0x80020002.
+* **Application ids** (`psmhost/shellcore/lnc_service.cpp`) — the kernel's numbering
+  (`sceKernelBeginAppMount2`) is not traced; the host numbers applications 1, 2, ..., ShellUI
+  first. ShellUI treats appIds as opaque.
 * **SQLite** — the eboot's static SQLite 3.35.5 (exported to Mono as `sqlite3`) is the
   upstream 3.35.5 amalgamation built with the eboot's compile options
   (`third_party/sqlite.cmake`); the console's VFS and mutex hooks are not reproduced (Windows

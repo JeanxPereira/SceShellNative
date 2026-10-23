@@ -175,11 +175,49 @@ Event types: 1 AppLaunchStart, 2 AppLaunchEnd, 3 AppKillStart, 4 AppKillEnd,
 `LaunchAppParamInit` (eboot 0x8e00) fills `{size 0x28, userId -1, appAttr 0,
 enableCrashReport 1, checkFlag 0, contextId 0, isSpeculativeLaunch 0}`.
 
+## Launching an installed title
+
+Pressing the cross button on a game tile ends in `AppLauncher.Start` (Sce.Vsh.ShellUI.AppSystem),
+which calls `LncUtilWrapper.LaunchApp` on the launcher job queue and ignores its result.
+Everything ShellUI then does follows the events SceShellCore queues and the answers to its
+LncUtil queries. `psmhost/shellcore/lnc_service.cpp` models SceShellCore's `LncManager`
+(lnc_manager.cpp; IPC handlers in lnc_util_ipc_server.cpp, 0x482580..0x48B260):
+
+- **The application list.** ShellUI is in it from the start: SceShellCore launches it through
+  the same `launchApp` (0x768650), and its param.json (`applicationCategoryType` 0x1000000)
+  makes it category "gdf", type ShellUI (1). `getAppStatus` answers the caller's record,
+  `getAppStatusList` all records but daemons and SceShellCore (at most 16), `getAppTitleId` and
+  `getAppId` look a record up.
+- **Category and type.** A PS5 param.json has no CATEGORY; the launcher derives it from
+  `applicationCategoryType` (0x4147F0: 0 and the 0x1xxxx/0x2xxxx game values "gd", 0x1000000
+  "gdf", 0x2000000 "gdd", 0x3000000 "gdg", 0x4000000 "gdi"), then the app type from the
+  category (0x414210: "gd" BigApp 5, "gdf" ShellUI 1, "gdd" Daemon 2).
+- **`launchApp`** (0x432630): the record (appId -1, the caller as parent), the title's
+  param.json, `APP_LAUNCH_START`, the appId (sceKernelBeginAppMount2's result), `spawnApp`, the
+  record added to the list (a big or mini app becomes the focused app: the kernel's spawn gives
+  it every focus), `APP_LAUNCH_END`, and the appId as the result. A failure at any step sends
+  `APP_LAUNCH_END` with the error.
+- **`setAppFocus`** (0x43F110): `APP_FOCUS_START`, the kernel's focus, controller focus -1,
+  `APP_FOCUS_END`; an unknown appId gives `APP_FOCUS_END` with 0x80940004.
+  **`setControllerFocus`** (0x43FA20): `CONTROLLER_FOCUS_START`, the kernel's controller focus,
+  `CONTROLLER_FOCUS_END`.
+- **`onAppExit`** (0x436460): the record leaves the list and `APP_KILL_END` follows.
+
+ShellUI hides itself on `APP_LAUNCH_END` of a big app and comes back on its `APP_KILL_END`.
+
+The application's process is a HOST POLICY (`lnc_host_app.cpp`, see host-values.md): a title
+listed in `<cache>/host/apps.json` starts a PC program; any other title fails at `spawnApp`
+with 0x80020002, as a title without its executable would.
+
+Not reproduced: the workspace and title mounts, `preLaunchCheck`, `checkExistingApp`, the CPU
+budget of extra audio devices, the application save, the mount roots, the parental check of
+`setAppFocus`, the suspension of the previously focused app, and the kill and suspend paths.
+
 ## Not traced / open
 
-- ShellCore's answer to `sceLncUtilGetAppStatus` for ShellUI itself: the appId ShellCore
-  assigns, its appType and appCategoryType. The same applies to the rest of the
-  `libSceLncUtilWrapper` set listed above.
+- The kernel's appId numbering (`sceKernelBeginAppMount2`, syscall 706); the host numbers
+  applications 1, 2, ... (host-values.md).
+- `getAppStatusListForShellUIReboot` and the rest of the `libSceLncUtilWrapper` set.
 - ShellCore's registered-user list handler (IPMI 0x3000F).
 - The RNPS app record's `downloadUrl`, and how `m_apps` is populated: which files a
   directory must hold to count as installed.
