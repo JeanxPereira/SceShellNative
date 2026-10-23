@@ -15,10 +15,12 @@
 #include <filesystem>
 #include <fstream>
 #include <iterator>
+#include <map>
 
 #include "core/log.h"
 #include "shellcore/shellcore_build.h"
 #include "host/boundary.h"
+#include "host/context.h"
 #include "libSceUrlConfigResolver/sce_json.h"
 #include "libkernel/process_param.h"
 #include "libSceRegMgr/regmgr.h"
@@ -479,6 +481,25 @@ int64_t sort_priority_for(const std::string& tid) {
     if (tid == k) return v;
   return 100;
 }
+// HOST POLICY: <cache>/host/ps_platform.json ({"<titleId>": <platform>, ...}) adds entries to
+// this table for titles the host installs. Values outside 0..2 (as the firmware's -1) give a
+// title no platform: the home draws no PS5/PS4/PS3 mark for it. Read once.
+const std::map<std::string, int64_t>& host_ps_platform() {
+  static const std::map<std::string, int64_t> table = [] {
+    std::map<std::string, int64_t> t;
+    std::ifstream f(fs::path(host::ctx().cache_dir) / "host" / "ps_platform.json", std::ios::binary);
+    if (!f) return t;
+    const std::string text((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
+    json::Value v;
+    if (!parse_json_text(text, &v) || v.type() != json::Type::Object) return t;
+    for (const auto& [k, p] : v.object())
+      if (p.type() == json::Type::Integer || p.type() == json::Type::UInteger) t[k] = p.integer();
+    host::note_unimplemented("HOST POLICY appinfo _ps_platform: host/ps_platform.json extends the 0xB62F30 table (" +
+                             std::to_string(t.size()) + " titles)");
+    return t;
+  }();
+  return table;
+}
 bool ps_platform_for(const std::string& tid, int64_t* v) {
   static const std::pair<const char*, int> kMap[] = {{"NPXS40145", 1}, {"NPXS40144", -1}, {"NPXS40148", -1}};
   for (const auto& [k, p] : kMap)
@@ -486,6 +507,10 @@ bool ps_platform_for(const std::string& tid, int64_t* v) {
       *v = p;
       return true;
     }
+  if (auto it = host_ps_platform().find(tid); it != host_ps_platform().end()) {
+    *v = it->second;
+    return true;
+  }
   return false;
 }
 const char* install_time_for(const std::string& tid) {

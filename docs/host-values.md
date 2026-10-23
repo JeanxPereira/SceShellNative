@@ -330,6 +330,12 @@ or policy. Each one is marked `HOST VALUE` / `HOST POLICY` in the code and logge
   `sceAutoMounterM2GetInternalStatus` answers as SceShellCore does for that slot (0x2A79C0): not
   present, availability NOT_CONNECTED (the boot mount's "not found" 0x80F40007 mapped by
   0x2B2DA0).
+* **Host title platforms** (`psmhost/shellcore/app_db_promote.cpp`) — SceShellCore gives a
+  title's `_ps_platform` from its category (0 PS5, 1 PS4, 2 PS3) and, for a few system titles,
+  from a fixed table (0xB62F30; NPXS40144 and NPXS40148 get -1, no platform). The host adds
+  entries to that table from `<cache>/host/ps_platform.json` (`{"<titleId>": <platform>}`), for
+  titles a host tool installs into `/user/app` that are not console games. With -1 the home draws
+  no PS5/PS4/PS3 mark on the tile, as for those system titles. Without the file nothing changes.
 * **SQLite** — the eboot's static SQLite 3.35.5 (exported to Mono as `sqlite3`) is the
   upstream 3.35.5 amalgamation built with the eboot's compile options
   (`third_party/sqlite.cmake`); the console's VFS and mutex hooks are not reproduced (Windows
