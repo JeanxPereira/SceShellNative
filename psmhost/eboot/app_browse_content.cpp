@@ -138,6 +138,8 @@ int32_t appinfo_content_type(const AppInfo& a, int32_t* t) {
   return 0;
 }
 
+}  // namespace
+
 // AppInfo vtable +0 (0x268F70 ToJson): {"parserId":0,"mimeType":0,"mimeTypeFormatVersion":0,
 // "promoterFormatVersion":0,"field_list":[{"key","type"(0 int / 2 string),"size"(8 / length),
 // "data"}...]} in the AppInfo map's key order, serialized compact (sce::Json, sorted keys).
@@ -165,6 +167,8 @@ std::string appinfo_json(const AppInfo& a) {
   o["field_list"] = json::Value::make_array(std::move(fields));
   return json::serialize(json::Value::make_object(std::move(o)));
 }
+
+namespace {
 
 // 0x3224F0: titleName, snd0Info, icon0Info, pic0Info, pic1Info.
 int32_t set_titles_and_paths(const AppInfo& a, Record& r) {

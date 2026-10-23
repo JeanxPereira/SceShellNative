@@ -34,4 +34,22 @@ SSN_PINVOKE("libSceMediaEventListener", "GetDiscInfoNative", int32_t, ssn_MediaE
   return 0;
 }
 
+// "libSceMediaEventListener" GetExternalHddStatusNative: {name, fn} entry 0xd03120 -> client
+// 0x722E00 (same checks and errors as GetDiscInfoNative), IPMI method 0x150001 (0x723B40).
+// Server GetExternalHddStatusIpc 0x49DEA0 -> sceExternalHddManager::GetExternalHddStatus
+// (0x499B30 -> 0x49C590): "mounted" is the manager's mounted flag (+9); "runningOperation" is
+// the operation of state 1 / 2 (0x49C0D0 with 100 / 102), else null. The object is serialised
+// with sorted keys; *outSize = length + 1, and a text that does not fit gives 0x81A80004.
+//
+// HOST VALUE: no external HDD is attached, so the manager is unmounted and idle.
+SSN_PINVOKE("libSceMediaEventListener", "GetExternalHddStatusNative", int32_t, ssn_MediaEventListener_GetExternalHddStatus,
+            (char* buff, uint32_t buff_size, uint32_t* out_size)) {
+  if (!buff || buff_size == 0 || !out_size) return static_cast<int32_t>(0x81A80000u);
+  static const char kText[] = R"({"mounted":false,"runningOperation":null})";
+  *out_size = static_cast<uint32_t>(sizeof kText);  // length + 1
+  if (*out_size > buff_size) return static_cast<int32_t>(0x81A80004u);
+  std::strncpy(buff, kText, buff_size);
+  return 0;
+}
+
 }  // namespace ssn::eboot

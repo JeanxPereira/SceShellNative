@@ -112,6 +112,8 @@ int32_t sync_title(const std::string& title_id, int32_t package_location);
 int32_t delete_title(const std::string& title_id);
 // AppInfo -> tbl_contentinfo record (0x322E60: 0x318150, 0x3224F0, 0x321D10).
 int32_t build_content_record(const AppInfo& info, bool is_new, Record* rec);
+// AppInfo vtable +0 (0x268F70 ToJson): the metadata JSON the managed Metadata.Deserialize reads.
+std::string appinfo_json(const AppInfo& a);
 
 // The ContentInfo observer of the AppBrowse manager (CDC108 +0x20 = 0x2E5600): every user's
 // tbl_iconinfo_ row for the title (0x2E56C0).
