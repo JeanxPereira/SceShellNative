@@ -504,12 +504,19 @@ void Device::present(Image& screen, const std::string& capture_path) {
   end_rendering();
   const uint64_t frame = ++presented_;
   // The vblank stand-in comes first, as SwapBuffers' wait for the previous frame (sub_2BC0)
-  // does on the console: headless, the ~60 Hz timer; with a window, the FIFO acquire.
-  if (headless_) pace_frame();
+  // does on the console: headless, the ~60 Hz timer; with a window, the FIFO acquire. A
+  // minimized window has a zero extent and nothing to present to: the timer, until the window
+  // has a size again and the swapchain is rebuilt.
+  bool minimized = false;
+  if (!headless_ && swap_extent_.width == 0) {
+    vkQueueWaitIdle(queue_);
+    minimized = !create_swapchain();
+  }
+  if (headless_ || minimized) pace_frame();
   FrameSlot& fs = slots_[slot_];
   uint32_t index = 0;
   VkResult ar = VK_NOT_READY;
-  if (!headless_) ar = vkAcquireNextImageKHR(device_, swapchain_, UINT64_MAX, fs.acquired, VK_NULL_HANDLE, &index);
+  if (!headless_ && !minimized) ar = vkAcquireNextImageKHR(device_, swapchain_, UINT64_MAX, fs.acquired, VK_NULL_HANDLE, &index);
   const bool have_image = (ar == VK_SUCCESS || ar == VK_SUBOPTIMAL_KHR);
   const bool png = !capture_.dir.empty() && capture_.wants(frame);
   if (have_image) {

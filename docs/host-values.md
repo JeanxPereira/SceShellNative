@@ -349,6 +349,11 @@ or policy. Each one is marked `HOST VALUE` / `HOST POLICY` in the code and logge
   shell). The application runs while that process runs and, with `"watch"`, while a process
   from that directory runs (the host waits up to 120 s for one to appear); then the launcher's
   `onAppExit` follows. A title without an entry fails to spawn with 0x80020002.
+* **Application window** (`psmhost/shellcore/lnc_host_app.cpp`, `launcher/src/platform/window.cpp`)
+  — the console gives a started application the screen and the pad; the PC application has a
+  window of its own. The host window minimizes when the program starts and is restored and
+  brought to the front when the application ends; meanwhile the XInput pad drives the shell only
+  while the host window is in front.
 * **Application ids** (`psmhost/shellcore/lnc_service.cpp`) — the kernel's numbering
   (`sceKernelBeginAppMount2`) is not traced; the host numbers applications 1, 2, ..., ShellUI
   first. ShellUI treats appIds as opaque.

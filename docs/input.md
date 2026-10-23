@@ -164,7 +164,9 @@ keys and the USB keyboard of `docs/ime.md`). Losing focus
 releases every key. Scripted key events (`--input-script`, `launcher/src/platform/input_script.cpp`)
 go through the same key table but are kept apart from the window's keys, so they do not
 depend on the focus (headless runs have no window). The XInput pad is read at every poll through `xinput1_4.dll`, which is
-loaded at run time. `SetVibration` drives its motors.
+loaded at run time. `SetVibration` drives its motors. While an application the shell started
+runs (docs/app-launch.md), the pad belongs to that application: XInput is read only while the
+SceShellNative window is in front (HOST POLICY, host-values.md "Application window").
 
 ### Power, connection and owner
 

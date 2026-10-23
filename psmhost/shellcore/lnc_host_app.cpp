@@ -17,6 +17,8 @@
 #include "host/boundary.h"
 #include "host/context.h"
 #include "libSceUrlConfigResolver/sce_json.h"
+#include "platform/input.h"
+#include "platform/window.h"
 
 namespace ssn::shellcore::lnc_host {
 namespace {
@@ -147,6 +149,10 @@ int32_t spawn(const std::string& title_id, const std::vector<std::string>& args,
     process = pi.hProcess;
   }
   log::info("lnc", "{}: started {}", title_id, p.uri.empty() ? p.exe : p.uri);
+  // The console hands the screen and the pad to the application; the PC's window steps aside
+  // for the application's own window, and the pad follows the window in front.
+  platform::main_window().step_aside();
+  platform::input::set_host_app_running(true);
   std::thread([process, watch = wide(p.watch), title_id, on_exit = std::move(on_exit)] {
     if (process) {
       WaitForSingleObject(process, INFINITE);
@@ -163,6 +169,8 @@ int32_t spawn(const std::string& title_id, const std::vector<std::string>& args,
       }
     }
     log::info("lnc", "{}: application ended", title_id);
+    platform::input::set_host_app_running(false);
+    platform::main_window().come_to_front();
     on_exit();
   }).detach();
   return 0;

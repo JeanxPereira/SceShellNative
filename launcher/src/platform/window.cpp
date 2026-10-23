@@ -55,6 +55,25 @@ void Window::client_size(int& w, int& h) const {
   h = r.bottom - r.top;
 }
 
+void Window::step_aside() {
+  if (hwnd_) ShowWindowAsync(hwnd_, SW_MINIMIZE);
+}
+
+void Window::come_to_front() {
+  if (!hwnd_) return;
+  ShowWindowAsync(hwnd_, SW_RESTORE);
+  // Windows hands the foreground only to the process the user last worked in (here, the
+  // application that just ended, or what it left in front). Joining the input of the
+  // foreground window's thread lifts that lock for this call.
+  const DWORD self = GetCurrentThreadId();
+  HWND fg = GetForegroundWindow();
+  const DWORD fg_thread = fg ? GetWindowThreadProcessId(fg, nullptr) : 0;
+  const bool joined = fg_thread && fg_thread != self && AttachThreadInput(self, fg_thread, TRUE);
+  BringWindowToTop(hwnd_);
+  SetForegroundWindow(hwnd_);
+  if (joined) AttachThreadInput(self, fg_thread, FALSE);
+}
+
 LRESULT CALLBACK Window::proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
   auto* self = reinterpret_cast<Window*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
   switch (msg) {

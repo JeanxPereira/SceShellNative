@@ -209,6 +209,14 @@ The application's process is a HOST POLICY (`lnc_host_app.cpp`, see host-values.
 listed in `<cache>/host/apps.json` starts a PC program; any other title fails at `spawnApp`
 with 0x80020002, as a title without its executable would.
 
+The console has one screen and one controller, and hands both to the application. On the PC
+the application has its own window, so the host's window steps aside (HOST POLICY, see
+host-values.md "Application window"): it minimizes when the program starts and is restored and
+brought to the front when the application ends, before `APP_KILL_END`. While the application
+runs and the host window is not in front, the XInput pad is not read (docs/input.md). A
+minimized window has nothing to present to; frames are then paced by the ~60 Hz timer, as a
+headless run.
+
 Not reproduced: the workspace and title mounts, `preLaunchCheck`, `checkExistingApp`, the CPU
 budget of extra audio devices, the application save, the mount roots, the parental check of
 `setAppFocus`, the suspension of the previously focused app, and the kill and suspend paths.

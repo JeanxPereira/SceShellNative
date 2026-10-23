@@ -56,6 +56,11 @@ bool powered();
 // Called once, on the thread that delivered the PS press, when the pad turns on.
 void set_power_on_listener(void (*fn)());
 
+// An application started by the shell runs (HOST POLICY, docs/input.md): the XInput pad
+// drives it, not the shell, unless the SceShellNative window is brought back to the front.
+// Counted: one call with `running` per start and per end.
+void set_host_app_running(bool running);
+
 // Window keyboard messages (called on the thread that pumps the window).
 void on_key(uint32_t vk, bool down);
 

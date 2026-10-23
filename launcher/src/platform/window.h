@@ -17,6 +17,11 @@ class Window {
   HINSTANCE instance() const { return instance_; }
   bool closed() const { return closed_; }
   void client_size(int& w, int& h) const;
+  // While an application started by the shell runs (HOST POLICY, docs/host-values.md
+  // "Application window"): the window minimizes for the application's own window, and comes
+  // back to the front when it ends. Callable from any thread; no-ops without a window.
+  void step_aside();
+  void come_to_front();
 
   std::function<void(uint32_t vk, bool down)> on_key;
   // When set, receives key messages instead of on_key, with the set-1 scan code and the

@@ -42,6 +42,7 @@ std::array<uint32_t, 256> g_script_down{};
 std::atomic<bool> g_powered{false};
 bool g_swallow_ps = false;
 void (*g_power_on_listener)() = nullptr;
+std::atomic<int> g_host_apps{0};  // applications started by the shell, still running
 
 // Recomputes the buttons/sticks from the window's and the script's keys (under g_mu).
 // Returns true when this change turned the pad on.
@@ -182,6 +183,7 @@ std::array<uint16_t, 256> g_vk_usage{};  // vk -> usage it was routed to (0: wen
 void set_powered_at_boot(bool on) { g_powered = on; }
 bool powered() { return g_powered.load(); }
 void set_power_on_listener(void (*fn)()) { g_power_on_listener = fn; }
+void set_host_app_running(bool running) { g_host_apps += running ? 1 : -1; }
 
 void on_key(uint32_t vk, bool down) {
   if (vk >= 256) return;
@@ -287,7 +289,9 @@ PadData read() {
   }
   auto& x = xinput();
   XState s{};
-  if (x.get && x.get(0, &s) == ERROR_SUCCESS) {
+  // While an application runs in front, its window has the pad.
+  const bool app_in_front = g_host_apps.load() > 0 && !window_has_focus();
+  if (!app_in_front && x.get && x.get(0, &s) == ERROR_SUCCESS) {
     const XGamepad& g = s.Gamepad;
     for (const auto& [xb, pb] : kXButtons)
       if (g.wButtons & xb) d.buttons |= pb;
