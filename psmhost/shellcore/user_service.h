@@ -36,7 +36,10 @@ enum Param : int32_t {
   kParamLoginFlag = 6,
   kParamAccountId = 256,
   kParamUserStatus = 2091,
+  kParamGameAgeLimit = 2193,
   kParamPlatformPrivacyWs1 = 2204,
+  kParamPapcWhitelist = 2215,
+  kParamGameAgeLimitRegion = 2245,
 };
 
 // CreateUser (0x6FB800) for a persistent user (kind 0): the first free slot, a new user id

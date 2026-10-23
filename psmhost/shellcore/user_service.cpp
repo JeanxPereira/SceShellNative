@@ -214,9 +214,36 @@ int32_t destroy_user(int32_t user_id) {
   return 0;
 }
 
+// Two parameters have no USER_nn key: 0x70EDB0 answers them from the system's parental
+// settings unless the entry has an NP account id (+256, parameter 256) or its byte +392 set
+// (+392 not traced; the host takes it as 0):
+//   2193 (game age limit): account -> 21; else SECURITY_PARENTAL_game_age_limit
+//     (0x03800600), 21 when the read fails.
+//   2245 (its region, 3-byte string): account -> ""; else
+//     SECURITY_PARENTAL_game_age_limit_region (0x03800700), "" when the read fails.
+namespace {
+
+constexpr uint32_t kKeyGameAgeLimit = 0x03800600;
+constexpr uint32_t kKeyGameAgeLimitRegion = 0x03800700;
+
+bool has_np_account(int32_t user_id) {
+  uint64_t account = 0;
+  return get_bin(user_id, kParamAccountId, &account, sizeof account) == 0 && account != 0;
+}
+
+}  // namespace
+
 int32_t get_int(int32_t user_id, int32_t param, int32_t* value) {
   if (!value) return kErrInvalidArgument;
   if (user_id == kUserIdInvalid) return kErrUserNotFound;
+  if (param == kParamGameAgeLimit) {
+    std::lock_guard l(st().mu);
+    if (find_slot(user_id) < 0) return kErrUserNotFound;
+    *value = 21;
+    int32_t v = 0;
+    if (!has_np_account(user_id) && regmgr::get_int(kKeyGameAgeLimit, &v) == 0) *value = v;
+    return 0;
+  }
   const ParamDef* p = find_param(param);
   if (!p || p->type != 0) {
     host::note_unimplemented(std::format("SceUserService parameter {} (int) not in 0x70EDB0's table", param));
@@ -244,14 +271,22 @@ int32_t set_int(int32_t user_id, int32_t param, int32_t value) {
 int32_t get_str(int32_t user_id, int32_t param, char* buf, size_t size) {
   if (!buf) return kErrInvalidArgument;
   if (user_id == kUserIdInvalid) return kErrUserNotFound;
-  const ParamDef* p = find_param(param);
-  if (!p || p->type != 1) return kErrInvalidArgument;
-  std::lock_guard l(st().mu);
-  const int slot = find_slot(user_id);
-  if (slot < 0) return kErrUserNotFound;
-  std::vector<char> tmp(p->size + 1, 0);
-  const int32_t r = regmgr::get_str(slot_key(p->key, slot), tmp.data(), p->size);
-  if (r != 0) return r;
+  std::vector<char> tmp;
+  if (param == kParamGameAgeLimitRegion) {
+    std::lock_guard l(st().mu);
+    if (find_slot(user_id) < 0) return kErrUserNotFound;
+    tmp.assign(4, 0);
+    if (has_np_account(user_id) || regmgr::get_str(kKeyGameAgeLimitRegion, tmp.data(), 3) != 0) tmp.assign(4, 0);
+  } else {
+    const ParamDef* p = find_param(param);
+    if (!p || p->type != 1) return kErrInvalidArgument;
+    std::lock_guard l(st().mu);
+    const int slot = find_slot(user_id);
+    if (slot < 0) return kErrUserNotFound;
+    tmp.assign(p->size + 1, 0);
+    const int32_t r = regmgr::get_str(slot_key(p->key, slot), tmp.data(), p->size);
+    if (r != 0) return r;
+  }
   const size_t n = std::min(size - 1, std::strlen(tmp.data()));
   std::memcpy(buf, tmp.data(), n);
   buf[n] = 0;
