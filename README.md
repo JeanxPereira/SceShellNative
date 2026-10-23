@@ -130,7 +130,9 @@ Headless runs, frame captures, scripted input and the diagnostics variables are 
 
 ## Acknowledgments
 
-Thanks to **basedempth** ([@exhaustiblewizard](https://github.com/exhaustiblewizard)) for all the help along the way. Much of what runs here was reached because of it.
+**basedempth** ([@exhaustiblewizard](https://github.com/exhaustiblewizard)) supplied the complete FW 4.03 devkit dump this project runs on. It carries the console's decryption outputs of its own RNPS bundles, so the shell's JavaScript and native sides match at last. Before that, basedempth was the first to get the 4.03 VSH running under emulation, proving it boots, and pointed the way to the Globe devkit archives and to the native modules the React Native host registers.
+
+The FW 4.03 managed set with full IL comes from the material **zecoxao** decrypted and shared with the scene.
 
 ---
 
