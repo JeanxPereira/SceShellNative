@@ -1,13 +1,17 @@
 // Sce.PlayStation.Core.Environment.SystemParameters (libScePsm.sprx, FW 4.03).
 #include <windows.h>
+#include <winioctl.h>
 
 #include <algorithm>
 #include <cstdint>
+#include <cstring>
 
 #include <filesystem>
+#include <vector>
 
 #include "common/managed_path.h"
 #include "common/mono_util.h"
+#include "core/log.h"
 #include "host/boundary.h"
 #include "host/context.h"
 #include "libScePsm/error.h"
@@ -27,6 +31,58 @@ constexpr const char* kLanguageTags[30] = {
     "zh-Hant", "zh-Hans", "fi-FI", "sv-SE", "da-DK", "nb-NO", "pl-PL", "pt-BR", "en-GB", "tr-TR",
     "es-419", "ar-AE", "fr-CA", "cs-CZ", "hu-HU", "el-GR", "ro-RO", "th-TH", "vi-VN", "id-ID",
 };
+
+// The host's nullfs: `target` appears at `link` as a directory junction (no copy; the
+// firmware's files are read in place). A junction already pointing at `target` is kept.
+bool mount_dir(const std::filesystem::path& link, const std::filesystem::path& target) {
+  namespace fs = std::filesystem;
+  std::error_code ec;
+  const fs::path abs = fs::absolute(target, ec).lexically_normal();
+  if (fs::is_symlink(link, ec) || fs::exists(fs::symlink_status(link, ec))) {
+    if (fs::read_symlink(link, ec).lexically_normal() == abs) return true;
+    fs::remove(link, ec);  // a junction (or empty directory) only; never its target
+  }
+  if (!fs::create_directory(link, ec)) return false;
+  HANDLE h = CreateFileW(link.c_str(), GENERIC_WRITE, 0, nullptr, OPEN_EXISTING,
+                         FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, nullptr);
+  if (h == INVALID_HANDLE_VALUE) return false;
+  const std::wstring sub = L"\\??\\" + abs.wstring(), print = abs.wstring();
+  // REPARSE_DATA_BUFFER, MountPointReparseBuffer (ntifs.h; not in the user-mode headers).
+  std::vector<uint8_t> buf(16 + (sub.size() + print.size() + 2) * sizeof(wchar_t));
+  auto put16 = [&](size_t at, size_t v) { const uint16_t w = static_cast<uint16_t>(v); std::memcpy(&buf[at], &w, 2); };
+  const uint32_t tag = IO_REPARSE_TAG_MOUNT_POINT;
+  std::memcpy(&buf[0], &tag, 4);
+  put16(4, buf.size() - 8);                              // ReparseDataLength
+  put16(8, 0);                                           // SubstituteNameOffset
+  put16(10, sub.size() * sizeof(wchar_t));               // SubstituteNameLength
+  put16(12, (sub.size() + 1) * sizeof(wchar_t));         // PrintNameOffset
+  put16(14, print.size() * sizeof(wchar_t));             // PrintNameLength
+  std::memcpy(&buf[16], sub.c_str(), (sub.size() + 1) * sizeof(wchar_t));
+  std::memcpy(&buf[16 + (sub.size() + 1) * sizeof(wchar_t)], print.c_str(), (print.size() + 1) * sizeof(wchar_t));
+  DWORD n = 0;
+  const bool ok = DeviceIoControl(h, FSCTL_SET_REPARSE_POINT, buf.data(), static_cast<DWORD>(buf.size()), nullptr, 0, &n, nullptr);
+  CloseHandle(h);
+  if (!ok) fs::remove(link, ec);
+  return ok;
+}
+
+// SceShellCore's sandbox (lnc_application.cpp, 0x4668F0) mounts with nullfs, for each
+// {privileged, path} of the table at 0x199C030 (/preinst/common, /preinst/priv, ...,
+// /system_ex/common_ex, /system_ex/priv_ex, ..., /user/priv), the path at
+// "/" + random word + "/" + basename(path) (0x416530); the privileged entries only for a
+// privileged process, which ShellUI is. The host's word is <cache>/system_data, which holds the
+// /system_data tree itself; of the firmware's directories it mounts /system_ex/priv_ex (the
+// profile cache's default icons, /<word>/priv_ex/etc, read by Sce.Vsh.ProfileCache).
+void mount_sandbox(const std::filesystem::path& word_dir) {
+  Firmware* fw = host::ctx().firmware;
+  if (!fw) return;
+  const std::string target = fw->host_path("/system_ex/priv_ex");
+  if (!mount_dir(word_dir / "priv_ex", target))
+    log::warn("psm", "sandbox: mounting {} at {} failed", target, (word_dir / "priv_ex").string());
+  host::note_unimplemented(
+      "SceShellCore sandbox mounts (0x4668F0): of the firmware's directories only /system_ex/priv_ex is mounted "
+      "(host junction)");
+}
 
 // GetString(ParameterKey, out string) — libScePsm 0x2d46f0.
 //   key 0  : sceSystemServiceParamGetInt(SCE_SYSTEM_SERVICE_PARAM_ID_LANG=0x02020000);
@@ -55,6 +111,7 @@ int32_t GetString(uint32_t key, MonoString** value) {
       const std::filesystem::path dir = std::filesystem::path(host::ctx().cache_dir) / "system_data";
       std::error_code ec;
       std::filesystem::create_directories(dir / "priv", ec);
+      mount_sandbox(dir);
       std::string m = host::managed_path(dir);
       while (!m.empty() && m.front() == '/') m.erase(m.begin());
       return m;

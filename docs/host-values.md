@@ -364,6 +364,12 @@ or policy. Each one is marked `HOST VALUE` / `HOST POLICY` in the code and logge
 * **File-system sandbox word** — the shell builds its `/system_data` paths as
   `"/" + SystemParameters.FileSystemSandboxRandomWord + "/..."`; the host's word is
   `<cache>/system_data` in drive-less rooted form, so those files live in the cache.
+* **Sandbox mounts** (`psmhost/libScePsm/environment/system_parameters.cpp`) — SceShellCore
+  mounts firmware directories into a process's sandbox with nullfs (0x4668F0, table 0x199C030:
+  each path at `/<word>/<basename>`, the privileged entries for privileged processes). The host
+  mounts `/system_ex/priv_ex` at `<cache>/system_data/priv_ex` as a directory junction, so the
+  shell reads the firmware's files in place (the profile cache's default avatars,
+  `/<word>/priv_ex/etc`). The other entries are not mounted.
 * **No console identity / services** — no NP, region and machine type
   0, video out 1080p 59.94 Hz, `SceBootStatusFlags` starting at 0, a DualSense fed from
   the keyboard/XInput.
