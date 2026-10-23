@@ -296,8 +296,15 @@ or policy. Each one is marked `HOST VALUE` / `HOST POLICY` in the code and logge
   `sceSystemStateMgrGetCurrentState` / `GetTriggerCode` (libSceSystemService 0x19DF0 / 0x19EA0)
   read.
 * **PSN accounts** — the NP manager's user contexts (SceShellCore 0x8B1480, one per registered
-  user) have no account data: `sceNpManagerIntGetSigninState` answers NOT_SIGNED_UP and
-  `GetCachedAccountInfo` 0x8055000A, as for a local user that never signed up.
+  user) have no account data: `sceNpManagerIntGetSigninState` answers NOT_SIGNED_UP,
+  `GetCachedAccountInfo` and `GetAccountCountryA` 0x8055000A, and `GetAccountType` type 1, as
+  for a local user that never signed up. The parental check of the home
+  (`psmhost/eboot/np_papc.cpp`) follows from that: a type-1 user is held to the system's game
+  age limit (registry `SECURITY_PARENTAL_game_age_limit`, 21 by default), compared with the
+  title's `ageLevel`.
+* **NpCommon JSON errors** (`psmhost/eboot/np_papc.cpp`) — the status codes libSceNpCommon's
+  streaming parser returns for malformed text are not traced; the host returns 0x80550602 for
+  a malformed `ageLevel` or parental whitelist.
 * **Thread scheduling** — PS5 thread priorities and schedule policies (`NativeThread.Priority` ->
   libScePsm 0x300f90 scePthreadSetprio; `ThreadUtils_SetSchedulePolicy` -> libNativeExtensions
   0x15330) are not mapped onto Windows threads; the calls answer 0 and Windows schedules the
