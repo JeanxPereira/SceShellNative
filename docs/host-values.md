@@ -358,9 +358,10 @@ or policy. Each one is marked `HOST VALUE` / `HOST POLICY` in the code and logge
   Settings root (NPXS40008) is a fixed list of 13 categories (module 932 of the 4.03 bundle,
   stored unfiltered by `categoriesList`, module 865); the firmware hides none. With
   `<cache>/host/settings.json` (`{"categories": ["<itemId>", ...]}`), the module that exports the
-  list is evaluated with it filtered to those itemIds, in the firmware's order. Debug Settings and
-  Voice Command, which the firmware adds after the list, are not affected. Without the file
-  nothing changes.
+  list is evaluated with it filtered to those itemIds, in the firmware's order, and the two items
+  `categoriesList` adds after the list, Debug Settings (`id_debug_settings`, devkit firmware) and
+  Voice Command (`id_voice_agent`), are kept only when listed too. Without the file nothing
+  changes.
 * **Application ids** (`psmhost/shellcore/lnc_service.cpp`) — the kernel's numbering
   (`sceKernelBeginAppMount2`) is not traced; the host numbers applications 1, 2, ..., ShellUI
   first. ShellUI treats appIds as opaque.

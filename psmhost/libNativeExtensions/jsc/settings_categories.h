@@ -10,7 +10,9 @@
 //   { "categories": ["id_accessibility", "id_account_management", "id_sound", ...] }
 //
 // The module that exports the list is then evaluated with the list filtered to those itemIds,
-// in the firmware's order. Without the file nothing changes.
+// in the firmware's order, and categoriesList's two additions after the list, Debug Settings
+// (id_debug_settings, devkit firmware) and Voice Command (id_voice_agent), are filtered the
+// same way. Without the file nothing changes.
 #pragma once
 #include <string>
 
